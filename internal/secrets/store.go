@@ -13,6 +13,8 @@ func GetNativeStore() Store {
 	switch runtime.GOOS {
 	case "darwin":
 		store = &KeychainStore{}
+	default:
+		store = &DefaultStore{}
 	}
 
 	return store

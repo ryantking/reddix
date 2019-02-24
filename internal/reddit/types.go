@@ -4,9 +4,10 @@ import "github.com/jzelinskie/geddit"
 
 // Session holds information about the current user session
 type Session struct {
-	LoggedIn bool
-	Username string
-	Password string
+	LoggedIn  bool
+	Username  string
+	Password  string
+	Subreddit string
 
 	DefaultSess *geddit.Session
 	LoginSess   *geddit.LoginSession

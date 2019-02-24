@@ -4,13 +4,16 @@ import (
 	"github.com/RyanTKing/reddix/internal/reddit"
 	"github.com/RyanTKing/reddix/internal/ui"
 	"github.com/RyanTKing/reddix/internal/ui/elements"
+
 	termbox "github.com/nsf/termbox-go"
+	"github.com/spf13/viper"
 )
 
 const (
 	menuLeft   = "q:quit r:subreddit u:user h:help"
 	menuCenter = "reddix"
-	menuRight  = "l:login"
+	menuRight1 = "l:login"
+	menuRight2 = "l:logout"
 )
 
 // New returns a new window
@@ -23,12 +26,10 @@ func New() (*Window, error) {
 	termbox.SetCursor(0, 0)
 
 	w, h := termbox.Size()
-	sess, err := reddit.NewSession()
-	topMenu := elements.NewMenu(menuLeft, menuCenter, menuRight)
+	topMenu := elements.NewMenu(menuLeft, menuCenter, menuRight1)
 	botMenu := elements.NewMenu("frontpage", "", "Not Logged In")
-	if sess.Username != "" {
-		botMenu.Left = sess.Username
-	}
+	username := viper.GetString("username")
+	sess := reddit.NewSession(username)
 	win := Window{
 		Width:      w,
 		Height:     h,
@@ -36,8 +37,16 @@ func New() (*Window, error) {
 		BottomMenu: botMenu,
 		Sess:       sess,
 	}
-	if err != nil {
-		win.Err = elements.NewError(err.Error())
+
+	if !viper.GetBool("anonymous") {
+		loggedIn, err := win.Sess.Login()
+		if err != nil {
+			win.Err = elements.NewError(err.Error())
+		}
+		if loggedIn {
+			win.TopMenu.Right = menuRight2
+			win.BottomMenu.Right = win.Sess.Username
+		}
 	}
 
 	return &win, nil
@@ -45,7 +54,7 @@ func New() (*Window, error) {
 
 // Run starts the main event loop
 func (win *Window) Run() {
-	if win.Sess.Username != "" {
+	if win.Sess.Username != "" && !win.Sess.LoggedIn {
 		win.enterTextEntryMode("password")
 	}
 	win.draw()
@@ -53,16 +62,19 @@ func (win *Window) Run() {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
+			var redraw bool
 			var err error
 			switch win.mode {
 			case Browse:
-				err = win.handleBrowseKey(ev)
+				redraw, err = win.handleBrowseKey(ev)
 			case TextEntry:
-				err = win.handleTextEntryKey(ev)
+				redraw, err = win.handleTextEntryKey(ev)
 			}
 
 			if err != nil {
 				win.Err = elements.NewError(err.Error())
+			}
+			if redraw {
 				win.draw()
 			}
 		case termbox.EventResize:
@@ -82,12 +94,14 @@ func (win *Window) Run() {
 func (win *Window) draw() {
 	if win.TopMenu.Size().X != win.Width {
 		win.TopMenu.SetRect(0, 0, win.Width, 1)
-		win.drawItem(win.TopMenu)
 	}
+	win.drawItem(win.TopMenu)
+
 	if win.BottomMenu.Size().X != win.Width || win.BottomMenu.Max.Y != win.Height-1 {
 		win.BottomMenu.SetRect(0, win.Height-2, win.Width, win.Height-1)
-		win.drawItem(win.BottomMenu)
 	}
+	win.drawItem(win.BottomMenu)
+
 	if win.TextEntry != nil && (win.TextEntry.Size().X != win.Width || win.TextEntry.Max.Y != win.Height) {
 		win.TextEntry.SetRect(0, win.Height-1, win.Width, win.Height)
 	}

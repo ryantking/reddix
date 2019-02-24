@@ -1,12 +1,9 @@
 package reddit
 
 import (
-	"fmt"
-
 	"github.com/RyanTKing/reddix/internal/secrets"
 
 	"github.com/jzelinskie/geddit"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -14,49 +11,98 @@ const (
 )
 
 // NewSession returns a new reddix session
-func NewSession() (*Session, error) {
-	sess := Session{}
-	store := secrets.GetNativeStore()
-	if store == nil {
-		return &sess, nil
+func NewSession(username string) *Session {
+	sess := Session{
+		Username:    username,
+		DefaultSess: geddit.NewSession(userAgent),
 	}
 
-	username := viper.GetString("username")
-	sess.Username = username
-	var password string
-	var ok bool
-	var err error
-	if username == "" {
-		ok, username, password, err = store.LoadDefault()
-		sess.Username = username
-	} else {
-		ok, password, err = store.Load(sess.Username)
+	return &sess
+}
+
+func (s *Session) saveCreds() error {
+	store := secrets.GetNativeStore()
+
+	err := store.Save(s.Username, s.Password)
+	if err == secrets.ErrUserAlreadyExists {
+		err = store.Delete(s.Username)
+		if err != nil {
+			return err
+		}
+		err = store.Save(s.Username, s.Password)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
+
+	return err
+}
+
+func (s *Session) loadCreds() (bool, error) {
+	store := secrets.GetNativeStore()
+
+	if s.Username == "" {
+		ok, username, password, err := store.LoadDefault()
+		if err != nil {
+			return false, err
+		}
+		if !ok {
+			return false, nil
+		}
+
+		s.Username = username
+		s.Password = password
+		return true, nil
+	}
+
+	ok, password, err := store.Load(s.Username)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 	if !ok {
-		return &sess, nil
+		return false, nil
 	}
+	s.Password = password
 
-	fmt.Println(password)
-
-	return &sess, nil
+	return true, nil
 }
 
 // Login attempts to log in to a reddit session
-func (s *Session) Login() error {
-	if s.Username == "" {
-		s.DefaultSess = geddit.NewSession(userAgent)
-		return nil
+func (s *Session) Login() (bool, error) {
+	if s.Username == "" || s.Password == "" {
+		ok, err := s.loadCreds()
+		if err != nil {
+			return false, err
+		}
+		if !ok {
+			return false, nil
+		}
 	}
 
 	sess, err := geddit.NewLoginSession(s.Username, s.Password, "gedditAgent v1")
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	s.LoginSess = sess
 	s.LoggedIn = true
-	return nil
+	err = s.saveCreds()
+	return true, nil
+}
+
+// Logout ends the current session
+func (s *Session) Logout() error {
+	if s.Username == "" {
+		return ErrNotLoggedIn
+	}
+	username := s.Username
+	s.Username = ""
+	s.Password = ""
+	s.LoggedIn = false
+	s.LoginSess = nil
+	store := secrets.GetNativeStore()
+	err := store.Delete(username)
+	return err
 }

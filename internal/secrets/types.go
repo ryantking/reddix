@@ -8,5 +8,8 @@ type Store interface {
 	Delete(username string) error
 }
 
+// DefaultStore is an empty store for when no service is available
+type DefaultStore struct{}
+
 // KeychainStore uses macOS keychain as a secret backend
 type KeychainStore struct{}

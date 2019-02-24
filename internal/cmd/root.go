@@ -39,7 +39,9 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().StringP("username", "u", "", "the user to browse reddit as")
+	rootCmd.PersistentFlags().BoolP("anonymous", "a", false, "don't attempt to log in in as a user")
 	viper.BindPFlag("username", rootCmd.PersistentFlags().Lookup("username"))
+	viper.BindPFlag("anonymous", rootCmd.PersistentFlags().Lookup("anonymous"))
 	viper.BindEnv("username", "REDDIX_USERNAME")
 }
 

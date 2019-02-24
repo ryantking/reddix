@@ -51,6 +51,7 @@ func (*KeychainStore) LoadDefault() (bool, string, string, error) {
 	query.SetSecClass(keychain.SecClassGenericPassword)
 	query.SetService(keychainService)
 	query.SetMatchLimit(keychain.MatchLimitOne)
+	query.SetReturnAttributes(true)
 	query.SetReturnData(true)
 	results, err := keychain.QueryItem(query)
 	if err != nil {
