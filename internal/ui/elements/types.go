@@ -2,6 +2,7 @@ package elements
 
 import (
 	"github.com/RyanTKing/reddix/internal/ui"
+	"github.com/jzelinskie/geddit"
 )
 
 // Menu is a menu that is drawn across the screen
@@ -27,4 +28,21 @@ type TextEntry struct {
 	Prefix    string
 	Text      string
 	Hidden    bool
+}
+
+// Posts is used to draw a series of posts to the screen
+type Posts struct {
+	ui.Block
+	Posts         []*geddit.Submission
+	Selected      int
+	Offset        int
+	LastPost      int
+	Frontpage     bool
+	TitleStyle    *ui.Style
+	SubtitleStyle *ui.Style
+	UpVoteStyle   *ui.Style
+	DownVoteStyle *ui.Style
+	ScoreStyle    *ui.Style
+	LinkStyle     *ui.Style
+	SelectedStyle *ui.Style
 }

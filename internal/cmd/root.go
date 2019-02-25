@@ -16,7 +16,11 @@ var rootCmd = &cobra.Command{
 	Use:   "reddix [subreddit]",
 	Short: "reddix is a command line utility for browsing reddit",
 	Run: func(cmd *cobra.Command, args []string) {
-		win, err := window.New()
+		var subreddit string
+		if len(args) == 1 {
+			subreddit = args[0]
+		}
+		win, err := window.New(subreddit)
 		if err != nil {
 			die(err)
 		}

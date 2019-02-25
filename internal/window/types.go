@@ -18,7 +18,9 @@ type Window struct {
 	BottomMenu *elements.Menu
 	TextEntry  *elements.TextEntry
 	Err        *elements.Error
+	Posts      *elements.Posts
 
+	subreddit       string
 	textEntryTarget string
 	mode            Mode
 	done            bool

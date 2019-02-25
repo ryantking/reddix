@@ -106,3 +106,16 @@ func (s *Session) Logout() error {
 	err := store.Delete(username)
 	return err
 }
+
+// Frontpage loads the front page of reddit and returns the posts
+func (s *Session) Frontpage() ([]*geddit.Submission, error) {
+	if s.LoggedIn {
+		return s.LoginSess.Frontpage(geddit.DefaultPopularity, geddit.ListingOptions{})
+	}
+	return s.DefaultSess.DefaultFrontpage(geddit.DefaultPopularity, geddit.ListingOptions{})
+}
+
+// Subreddit loads the posts from a subreddit
+func (s *Session) Subreddit(subreddit string) ([]*geddit.Submission, error) {
+	return s.DefaultSess.SubredditSubmissions(subreddit, geddit.DefaultPopularity, geddit.ListingOptions{})
+}

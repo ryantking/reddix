@@ -20,4 +20,14 @@ var Theme = &RootTheme{
 	Error: ErrorTheme{
 		Text: NewStyle(ColorRed),
 	},
+
+	Posts: PostsTheme{
+		Title:    NewStyle(ColorWhite, ColorBlack, ModifierBold),
+		Subtitle: NewStyle(ColorWhite),
+		UpVote:   NewStyle(ColorRed),
+		DownVote: NewStyle(ColorBlue),
+		Score:    NewStyle(ColorWhite),
+		Link:     NewStyle(ColorWhite, ColorBlack, ModifierUnderline),
+		Selected: NewStyle(ColorWhite, ColorBlack, ModifierBold|ModifierUnderline),
+	},
 }

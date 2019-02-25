@@ -72,7 +72,8 @@ func (win *Window) handleTextEntryKey(ev termbox.Event) (bool, error) {
 				win.BottomMenu.Right = win.Sess.Username
 			}
 		case "subreddit":
-			win.Sess.Subreddit = win.TextEntry.Text
+			win.subreddit = win.TextEntry.Text
+			win.refreshPosts()
 			win.mode = Browse
 			termbox.SetCursor(0, 0)
 		}
