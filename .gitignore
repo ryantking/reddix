@@ -18,4 +18,4 @@
 # End of https://www.gitignore.io/api/go
 
 # Reddix binary
-reddix
+cmd/reddix/reddix
