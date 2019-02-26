@@ -58,10 +58,11 @@ type RootTheme struct {
 
 	Block BlockTheme
 
-	Menu      MenuTheme
-	TextEntry TextEntryTheme
-	Error     ErrorTheme
-	Posts     PostsTheme
+	Menu       MenuTheme
+	TextEntry  TextEntryTheme
+	Error      ErrorTheme
+	Post       PostTheme
+	PostNumber PostNumberTheme
 }
 
 // BlockTheme represents the theme used for a block
@@ -85,13 +86,17 @@ type ErrorTheme struct {
 	Text *Style
 }
 
-// PostsTheme represents the theme for posts
-type PostsTheme struct {
+// PostTheme represents the theme for a post
+type PostTheme struct {
 	Title    *Style
 	Subtitle *Style
 	UpVote   *Style
 	DownVote *Style
 	Score    *Style
 	Link     *Style
-	Selected *Style
+}
+
+// PostNumberTheme represents the theme for a post number
+type PostNumberTheme struct {
+	Num *Style
 }

@@ -1,8 +1,6 @@
 package window
 
 import (
-	"fmt"
-
 	"github.com/RyanTKing/reddix/internal/reddit"
 	"github.com/RyanTKing/reddix/internal/ui"
 	"github.com/RyanTKing/reddix/internal/ui/elements"
@@ -127,8 +125,8 @@ func (win *Window) draw() {
 		win.drawItem(win.TextEntry)
 	}
 
-	win.Posts.SetRect(0, 1, win.Width, win.Height-2)
-	win.drawItem(win.Posts)
+	// win.Posts.SetRect(0, 1, win.Width, win.Height-2)
+	win.drawPosts()
 
 	termbox.Flush()
 }
@@ -143,28 +141,4 @@ func (win *Window) drawItem(item ui.Drawable) {
 			termbox.SetCell(p.X, p.Y, cell.Rune, fg, bg)
 		}
 	}
-}
-
-func (win *Window) refreshPosts() error {
-	if win.subreddit == "" {
-		posts, err := win.Sess.Frontpage()
-		if err != nil {
-			return err
-		}
-
-		win.Posts = elements.NewPosts(posts)
-		win.Posts.Frontpage = true
-		win.BottomMenu.Left = "frontpage"
-		return nil
-	}
-
-	posts, err := win.Sess.Subreddit(win.subreddit)
-	if err != nil {
-		return err
-	}
-
-	win.Posts = elements.NewPosts(posts)
-	win.Posts.Frontpage = false
-	win.BottomMenu.Left = fmt.Sprintf("r/%s", win.subreddit)
-	return nil
 }

@@ -21,13 +21,16 @@ var Theme = &RootTheme{
 		Text: NewStyle(ColorRed),
 	},
 
-	Posts: PostsTheme{
+	Post: PostTheme{
 		Title:    NewStyle(ColorWhite, ColorBlack, ModifierBold),
 		Subtitle: NewStyle(ColorWhite),
 		UpVote:   NewStyle(ColorRed),
 		DownVote: NewStyle(ColorBlue),
 		Score:    NewStyle(ColorWhite),
 		Link:     NewStyle(ColorWhite, ColorBlack, ModifierUnderline),
-		Selected: NewStyle(ColorWhite, ColorBlack, ModifierBold|ModifierUnderline),
+	},
+
+	PostNumber: PostNumberTheme{
+		Num: NewStyle(ColorWhite, ColorBlack, ModifierBold),
 	},
 }

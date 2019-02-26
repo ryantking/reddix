@@ -75,6 +75,8 @@ func (win *Window) handleTextEntryKey(ev termbox.Event) (bool, error) {
 			win.subreddit = win.TextEntry.Text
 			win.refreshPosts()
 			win.mode = Browse
+			win.selected = 0
+			win.postOffset = 0
 			termbox.SetCursor(0, 0)
 		}
 

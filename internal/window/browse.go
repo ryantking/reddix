@@ -20,23 +20,27 @@ func (win *Window) handleBrowseKey(ev termbox.Event) (bool, error) {
 		return true, nil
 	}
 	if ev.Ch == 'j' {
-		if win.Posts.Selected < len(win.Posts.Posts)-1 {
-			win.Posts.Selected++
-			if win.Posts.Selected >= win.Posts.LastPost {
-				win.Posts.Offset++
+		if win.selected < len(win.posts)-1 {
+			win.selected++
+			if win.selected >= win.lastPost {
+				win.postOffset++
 			}
+
 			return true, nil
 		}
+
 		return false, nil
 	}
 	if ev.Ch == 'k' {
-		if win.Posts.Selected > 0 {
-			win.Posts.Selected--
-			if win.Posts.Selected < win.Posts.Offset {
-				win.Posts.Offset--
+		if win.selected > 0 {
+			win.selected--
+			if win.selected < win.postOffset {
+				win.postOffset--
 			}
+
 			return true, nil
 		}
+
 		return false, nil
 	}
 	if ev.Ch == 'r' {

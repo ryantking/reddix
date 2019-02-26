@@ -1,9 +1,18 @@
 package ui
 
-import "unicode"
+import (
+	"strings"
+
+	"github.com/RyanTKing/reddix/internal/ui/symbols"
+)
 
 // ParseText wraps text to a given width and expands newlines
 func ParseText(s string, width int) []string {
+	s = strings.Replace(s, string(symbols.LeftSingleQuote), "'", -1)
+	s = strings.Replace(s, string(symbols.RightSingleQuote), "'", -1)
+	s = strings.Replace(s, string(symbols.LeftDoubleQuote), "\"", -1)
+	s = strings.Replace(s, string(symbols.RightDoubleQuote), "\"", -1)
+
 	wrapped := []string{}
 	for s != "" {
 		if len(s) < width {
@@ -23,9 +32,7 @@ func ParseText(s string, width int) []string {
 			}
 
 			if c == ' ' {
-				if !unicode.IsPunct(rune(s[i+1])) {
-					lastSpace = i
-				}
+				lastSpace = i
 			}
 		}
 

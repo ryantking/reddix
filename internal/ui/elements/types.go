@@ -2,7 +2,6 @@ package elements
 
 import (
 	"github.com/RyanTKing/reddix/internal/ui"
-	"github.com/jzelinskie/geddit"
 )
 
 // Menu is a menu that is drawn across the screen
@@ -30,19 +29,26 @@ type TextEntry struct {
 	Hidden    bool
 }
 
-// Posts is used to draw a series of posts to the screen
-type Posts struct {
+// Post is an reddit post
+type Post struct {
 	ui.Block
-	Posts         []*geddit.Submission
-	Selected      int
-	Offset        int
-	LastPost      int
-	Frontpage     bool
+	Title         []string
+	Author        string
+	Submitted     string
+	Score         string
+	NumComments   int
+	Subreddit     string
 	TitleStyle    *ui.Style
 	SubtitleStyle *ui.Style
 	UpVoteStyle   *ui.Style
 	DownVoteStyle *ui.Style
 	ScoreStyle    *ui.Style
 	LinkStyle     *ui.Style
-	SelectedStyle *ui.Style
+}
+
+// PostNumber is the number label of a post
+type PostNumber struct {
+	ui.Block
+	Num      int
+	NumStyle *ui.Style
 }
