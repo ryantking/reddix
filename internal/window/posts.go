@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/RyanTKing/reddix/internal/ui"
+	termbox "github.com/nsf/termbox-go"
 
 	"github.com/RyanTKing/reddix/internal/ui/elements"
 )
@@ -17,6 +18,8 @@ func (win *Window) refreshPosts() error {
 		}
 
 		win.posts = posts
+		win.selected = 0
+		win.postOffset = 0
 		win.BottomMenu.Left = "frontpage"
 		return nil
 	}
@@ -27,6 +30,8 @@ func (win *Window) refreshPosts() error {
 	}
 
 	win.posts = posts
+	win.selected = 0
+	win.postOffset = 0
 	win.BottomMenu.Left = fmt.Sprintf("r/%s", win.subreddit)
 	return nil
 }
@@ -35,7 +40,7 @@ func (win *Window) clearPosts() {
 	block := ui.NewBlock()
 	block.Border = false
 	block.SetRect(0, 1, win.Width, win.Height-2)
-	win.drawItem(block)
+	win.draw(block)
 }
 
 func (win *Window) drawPosts() {
@@ -47,7 +52,7 @@ func (win *Window) drawPosts() {
 		title := ui.ParseText(post.Title, titleLen)
 		if row >= win.Height-2 {
 			win.lastPost = win.postOffset + i
-			return
+			break
 		}
 		height := 2 + len(title)
 		if row+height >= win.Height-2 {
@@ -56,7 +61,7 @@ func (win *Window) drawPosts() {
 
 		pn := elements.NewPostNumber(win.postOffset + i)
 		pn.SetRect(0, row, maxNumLen, row+height)
-		win.drawItem(pn)
+		win.draw(pn)
 
 		submitted := parseTime(post.DateCreated)
 		score := parseScore(post.Score)
@@ -68,9 +73,11 @@ func (win *Window) drawPosts() {
 		if win.postOffset+i == win.selected {
 			p.TitleStyle = ui.NewStyle(ui.ColorWhite, ui.ColorBlack, ui.ModifierBold|ui.ModifierUnderline)
 		}
-		win.drawItem(p)
+		win.draw(p)
 		row += height + 1
 	}
+
+	termbox.Flush()
 }
 
 func parseScore(score int) string {

@@ -3,17 +3,13 @@ package window
 import (
 	"github.com/RyanTKing/reddix/internal/reddit"
 	"github.com/RyanTKing/reddix/internal/ui"
-	"github.com/RyanTKing/reddix/internal/ui/elements"
 
 	termbox "github.com/nsf/termbox-go"
 	"github.com/spf13/viper"
 )
 
 const (
-	menuLeft   = "q:quit r:subreddit u:user h:help"
-	menuCenter = "reddix"
-	menuRight1 = "l:login"
-	menuRight2 = "l:logout"
+	frontpage = "frontpage"
 )
 
 // New returns a new window
@@ -26,33 +22,25 @@ func New(subreddit string) (*Window, error) {
 	termbox.SetCursor(0, 0)
 
 	w, h := termbox.Size()
-	topMenu := elements.NewMenu(menuLeft, menuCenter, menuRight1)
-	botMenu := elements.NewMenu("frontpage", "", "Not Logged In")
 	username := viper.GetString("username")
 	sess := reddit.NewSession(username)
 	win := Window{
 		Width:      w,
 		Height:     h,
-		TopMenu:    topMenu,
-		BottomMenu: botMenu,
+		TopMenu:    makeTopMenu(w),
+		BottomMenu: makeBottomMenu(w, h),
 		Sess:       sess,
 		subreddit:  subreddit,
+		miniBuffer: makeMiniBuffer(w, h),
 	}
 
 	if !viper.GetBool("anonymous") {
-		loggedIn, err := win.Sess.Login()
-		if err != nil {
-			win.Err = elements.NewError(err.Error())
-		}
-		if loggedIn {
-			win.TopMenu.Right = menuRight2
-			win.BottomMenu.Right = win.Sess.Username
-		}
+		win.login()
 	}
 
 	err := win.refreshPosts()
 	if err != nil {
-		win.Err = elements.NewError(err.Error())
+		win.setStatus(err.Error(), true)
 		return &win, nil
 	}
 
@@ -62,34 +50,26 @@ func New(subreddit string) (*Window, error) {
 // Run starts the main event loop
 func (win *Window) Run() {
 	if win.Sess.Username != "" && !win.Sess.LoggedIn {
-		win.enterTextEntryMode("password")
+		win.enterInputMode("password")
 	}
-	win.draw()
+
+	win.drawTopMenu()
+	win.drawBottomMenu()
+	win.drawPosts()
 
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
-			var redraw bool
-			var err error
 			switch win.mode {
 			case Browse:
-				redraw, err = win.handleBrowseKey(ev)
+				win.handleBrowseKey(ev)
 			case TextEntry:
-				redraw, err = win.handleTextEntryKey(ev)
-			}
-
-			if err != nil {
-				win.Err = elements.NewError(err.Error())
-			}
-			if redraw {
-				win.draw()
+				win.handleTextEntryKey(ev)
 			}
 		case termbox.EventResize:
-			win.Width = ev.Width
-			win.Height = ev.Height
-			win.draw()
+			win.resize(ev.Width, ev.Height)
 		case termbox.EventError:
-			win.Err = elements.NewError(ev.Err.Error())
+			win.setStatus(ev.Err.Error(), true)
 		}
 
 		if win.done {
@@ -103,35 +83,23 @@ func (win *Window) Close() {
 	termbox.Close()
 }
 
-func (win *Window) draw() {
-	if win.TopMenu.Size().X != win.Width {
-		win.TopMenu.SetRect(0, 0, win.Width, 1)
-	}
-	win.drawItem(win.TopMenu)
-
-	if win.BottomMenu.Size().X != win.Width || win.BottomMenu.Max.Y != win.Height-1 {
-		win.BottomMenu.SetRect(0, win.Height-2, win.Width, win.Height-1)
-	}
-	win.drawItem(win.BottomMenu)
-
-	if win.TextEntry != nil && (win.TextEntry.Size().X != win.Width || win.TextEntry.Max.Y != win.Height) {
-		win.TextEntry.SetRect(0, win.Height-1, win.Width, win.Height)
-	}
-	if win.Err != nil {
-		win.Err.SetRect(0, win.Height-1, win.Width, win.Height)
-		win.drawItem(win.Err)
-		win.Err = nil
-	} else if win.TextEntry != nil {
-		win.drawItem(win.TextEntry)
+func (win *Window) resize(width, height int) {
+	if width != win.Width {
+		win.TopMenu.SetRect(0, 0, width, 1)
+		win.drawTopMenu()
 	}
 
-	// win.Posts.SetRect(0, 1, win.Width, win.Height-2)
-	win.drawPosts()
+	if width != win.Width || height != win.Height {
+		win.BottomMenu.SetRect(0, height-2, width, height-1)
+		win.drawBottomMenu()
+		win.drawPosts()
+	}
 
-	termbox.Flush()
+	win.Width = width
+	win.Height = height
 }
 
-func (win *Window) drawItem(item ui.Drawable) {
+func (win *Window) draw(item ui.Drawable) {
 	buf := ui.NewBuffer(item.GetRect())
 	item.Draw(buf)
 	for p, cell := range buf.Cells {

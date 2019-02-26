@@ -13,12 +13,9 @@ var Theme = &RootTheme{
 		Text: NewStyle(ColorBlack, ColorWhite),
 	},
 
-	TextEntry: TextEntryTheme{
-		Text: NewStyle(ColorWhite),
-	},
-
-	Error: ErrorTheme{
-		Text: NewStyle(ColorRed),
+	Text: TextTheme{
+		Text:  NewStyle(ColorWhite),
+		Error: NewStyle(ColorRed),
 	},
 
 	Post: PostTheme{

@@ -59,8 +59,7 @@ type RootTheme struct {
 	Block BlockTheme
 
 	Menu       MenuTheme
-	TextEntry  TextEntryTheme
-	Error      ErrorTheme
+	Text       TextTheme
 	Post       PostTheme
 	PostNumber PostNumberTheme
 }
@@ -76,14 +75,10 @@ type MenuTheme struct {
 	Text *Style
 }
 
-// TextEntryTheme represents the them used for text entry
-type TextEntryTheme struct {
-	Text *Style
-}
-
-// ErrorTheme represents the theme used for errors
-type ErrorTheme struct {
-	Text *Style
+// TextTheme represents the them used for text entry
+type TextTheme struct {
+	Text  *Style
+	Error *Style
 }
 
 // PostTheme represents the theme for a post

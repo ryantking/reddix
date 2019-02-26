@@ -13,20 +13,13 @@ type Menu struct {
 	Right     string
 }
 
-// Error is an error to be displayed to the GUI
-type Error struct {
+// Text is a text field
+type Text struct {
 	ui.Block
-	TextStyle *ui.Style
-	Msg       string
-}
-
-// TextEntry is used to allow a user to enter text
-type TextEntry struct {
-	ui.Block
-	TextStyle *ui.Style
-	Prefix    string
-	Text      string
-	Hidden    bool
+	Error      bool
+	Text       string
+	TextStyle  *ui.Style
+	ErrorStyle *ui.Style
 }
 
 // Post is an reddit post
