@@ -33,7 +33,7 @@ func (s *Session) Login() (bool, error) {
 // UserLogin attempts to log into a reddit session with a given username
 func (s *Session) UserLogin(username string) (bool, error) {
 	s.Username = username
-	store := secrets.GetNativeStore()
+	store := secrets.GetStore()
 	ok, password, err := store.Load(username)
 	if err != nil {
 		return false, err
@@ -48,7 +48,7 @@ func (s *Session) UserLogin(username string) (bool, error) {
 
 // DefaultLogin attempts to log in to a reddit session using stored credentials
 func (s *Session) DefaultLogin() (bool, error) {
-	store := secrets.GetNativeStore()
+	store := secrets.GetStore()
 	ok, username, password, err := store.LoadDefault()
 	if err != nil {
 		return false, err
@@ -71,7 +71,7 @@ func (s *Session) Logout() error {
 	s.Username = ""
 	s.Password = ""
 	s.LoginSess = nil
-	store := secrets.GetNativeStore()
+	store := secrets.GetStore()
 	err := store.Delete(username)
 	return err
 }
@@ -82,7 +82,7 @@ func (s *Session) LoggedIn() bool {
 }
 
 func (s *Session) saveCreds() error {
-	store := secrets.GetNativeStore()
+	store := secrets.GetStore()
 
 	err := store.Save(s.Username, s.Password)
 	if err == secrets.ErrUserAlreadyExists {

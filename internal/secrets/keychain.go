@@ -1,12 +1,27 @@
+// +build darwin
+
 package secrets
 
 import (
 	keychain "github.com/keybase/go-keychain"
 )
 
+var store Store
+
 const (
 	keychainService = "reddix"
 )
+
+// GetStore returns a new macOS keychain secret store
+func GetStore() Store {
+	if store != nil {
+		return store
+	}
+
+	store = &KeychainStore{}
+
+	return store
+}
 
 // Save saves a username and password tuple to the macOS keychain service
 func (*KeychainStore) Save(username, password string) error {
