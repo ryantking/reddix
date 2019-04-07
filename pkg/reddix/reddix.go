@@ -1,6 +1,7 @@
 package reddix
 
 import (
+	"github.com/RyanTKing/reddix/internal/config"
 	"github.com/RyanTKing/reddix/pkg/event"
 	"github.com/RyanTKing/reddix/pkg/session"
 	"github.com/RyanTKing/reddix/pkg/view"
@@ -80,6 +81,11 @@ func (reddix *Reddix) Login() {
 		return
 	}
 
+	err = config.SetDefaultUser(reddix.sess.Username)
+	if err != nil {
+		reddix.miniBuffer.SetStatus(reddix.win, err.Error(), true)
+		return
+	}
 	reddix.miniBuffer.SetStatus(reddix.win, "login succeeded", false)
 	reddix.topMenu.Right = topMenuRight2
 	reddix.topMenu.Draw(reddix.win)

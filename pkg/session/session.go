@@ -1,12 +1,14 @@
 package session
 
 import (
-	"github.com/RyanTKing/reddix/internal/secrets"
+	"github.com/RyanTKing/reddix/internal/config"
 	"github.com/jzelinskie/geddit"
+	"github.com/zalando/go-keyring"
 )
 
 const (
-	userAgent = "gedditAgent v1"
+	keyringService = "reddix"
+	userAgent      = "gedditAgent v1"
 )
 
 // New returns a new reddit session
@@ -26,35 +28,39 @@ func (s *Session) Login() (bool, error) {
 	}
 
 	s.LoginSess = sess
-	err = s.saveCreds()
-	return true, err
+	err = keyring.Set(keyringService, s.Username, s.Password)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // UserLogin attempts to log into a reddit session with a given username
 func (s *Session) UserLogin(username string) (bool, error) {
 	s.Username = username
-	store := secrets.GetStore()
-	ok, password, err := store.Load(username)
+	password, err := keyring.Get(keyringService, username)
 	if err != nil {
 		return false, err
 	}
-	if !ok {
-		return false, nil
-	}
 
 	s.Password = password
+
 	return s.Login()
 }
 
 // DefaultLogin attempts to log in to a reddit session using stored credentials
 func (s *Session) DefaultLogin() (bool, error) {
-	store := secrets.GetStore()
-	ok, username, password, err := store.LoadDefault()
+	username, err := config.GetDefaultUser()
 	if err != nil {
 		return false, err
 	}
-	if !ok {
+	if username == "" {
 		return false, nil
+	}
+	password, err := keyring.Get(keyringService, username)
+	if err != nil {
+		return false, err
 	}
 
 	s.Username = username
@@ -71,32 +77,22 @@ func (s *Session) Logout() error {
 	s.Username = ""
 	s.Password = ""
 	s.LoginSess = nil
-	store := secrets.GetStore()
-	err := store.Delete(username)
+	defaultUser, err := config.GetDefaultUser()
+	if err != nil {
+		return err
+	}
+	if username == defaultUser {
+		err := config.DeleteDefaultUser()
+		if err != nil {
+			return err
+		}
+	}
+
+	keyring.Delete(keyringService, username)
 	return err
 }
 
 // LoggedIn returns whether or not the user is logged in
 func (s *Session) LoggedIn() bool {
 	return s.LoginSess != nil
-}
-
-func (s *Session) saveCreds() error {
-	store := secrets.GetStore()
-
-	err := store.Save(s.Username, s.Password)
-	if err == secrets.ErrUserAlreadyExists {
-		err = store.Delete(s.Username)
-		if err != nil {
-			return err
-		}
-		err = store.Save(s.Username, s.Password)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return err
 }
